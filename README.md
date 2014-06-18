@@ -1,4 +1,4 @@
-eweiqi
+dweiqi
 ======
 
 go chess source code
