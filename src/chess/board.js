@@ -24,14 +24,14 @@ d.Board.prototype = {
 		ctx.fill();
 		//grid
 		var gridAttr, cellSize, gridWidth, gridHeight, gridX, gridY;
-		gridAttr = d.getGridAttr();
+		gridAttr = d.G.grid;
 		cellSize = gridAttr.cellSize;
 		gridWidth = gridHeight = gridAttr.gridSize;
 		gridX = gridAttr.left;
 		gridY = gridAttr.top;
 		ctx.lineWidth = 1;
 		ctx.strokeStyle = "#000000";
-		for(var i=0; i<d.G.gridNum; i++)
+		for(var i=0; i<gridAttr.num; i++)
 		{
 			ctx.beginPath();
 			ctx.moveTo(cellSize*i+gridX, gridY);

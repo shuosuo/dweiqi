@@ -12,23 +12,18 @@ d.G = {
 		width: 600,
 		height: 600
 	},
-	gridNum: 19
-};
-
-d.getGridAttr = function() {
-    var left, top, cellSize, gridSize;
-    cellSize = Math.floor(d.G.stage.width/(d.G.gridNum+1));
-    gridSize = cellSize*(d.G.gridNum-1);
-    left = top = (d.G.stage.width-gridSize)/2;
-    return {
-        "left": left,
-        "top" : top,
-        "cellSize" : cellSize,
-        "gridSize" : gridSize
+	grid: {
+        num: 19,
+        cellSize: 30,       //cellSize=Math.floor(d.G.stage.width/(d.G.grid.num+1));
+        gridSize: 540,      //gridSize=cellSize*(d.G.grid.num-1);
+        left: 30,           //left=(d.G.stage.width-gridSize)/2;
+        top: 30             //top=(d.G.stage.width-gridSize)/2;
     }
 };
-d.getPosByPoint = function(x, y, gridAttr) {
+
+d.getPosByPoint = function(x, y) {
     var left, top;
+    var gridAttr = d.G.grid;
     left = gridAttr.left + x*gridAttr.cellSize;
     top = gridAttr.top + y*gridAttr.cellSize;
     return {

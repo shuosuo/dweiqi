@@ -5,7 +5,8 @@ d.Canvas = function(target) {
     canvas.height = d.G.stage.height;
     var container = typeof target==="string"?document.getElementById(target):target;
     container.appendChild(canvas);
-    if(window.attachEvent&&navigator.userAgent.indexOf("Opera")===-1){
+    //if(window.attachEvent&&navigator.userAgent.indexOf("Opera")===-1){
+    if(lteie8===true) {
         this.elem = window.G_vmlCanvasManager.initElement(canvas);
     }
 };

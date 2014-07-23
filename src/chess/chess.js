@@ -2,7 +2,6 @@
 
 d.Chess = function(id) {
 	var chess = this;
-	chess.gridAttr = d.getGridAttr();
 	//rawDataMap: The raw data of a chess game, to record every step chess, format as [stepData, stepData, ...]
 	//stepData: to record every step, format as { key: value, key: value, ... }
 	//key: format as /[0-18]~[0-18]/, e.g. '3~8', first number is x position, second number is y position 
@@ -39,6 +38,7 @@ d.Chess = function(id) {
 	function clickHandler(event, target, chess) {
         var point = chess.getPoint(event.offsetX, event.offsetY);
         if(!point) return;
+        if(point.x<0||point.x>=d.G.grid.num||point.y<0||point.y>=d.G.grid.num) return;
         var chessman = chess.getChessman(point);
         if(chessman) return;
         chess.move(point);
@@ -47,11 +47,11 @@ d.Chess = function(id) {
 
 d.Chess.prototype = {
 	getPoint: function(offsetX, offsetY) {
-		var gridAttr = this.gridAttr;
-		if(offsetX<gridAttr.left
-			||offsetY<gridAttr.top
-			||offsetX>gridAttr.left+gridAttr.gridSize
-			||offsetY>gridAttr.top+gridAttr.gridSize)
+		var gridAttr = d.G.grid;
+		if(offsetX<gridAttr.left-gridAttr.cellSize/2
+			||offsetY<gridAttr.top-gridAttr.cellSize/2
+			||offsetX>gridAttr.left+gridAttr.gridSize+gridAttr.cellSize/2
+			||offsetY>gridAttr.top+gridAttr.gridSize+gridAttr.cellSize/2)
 		{
 			return null;
 		}
@@ -70,7 +70,7 @@ d.Chess.prototype = {
 		this.rawDataMap.push(this.currentStep);
 		this.currentStep[key] = [this.currentPlayer, this.rawDataMap.length];
 		this.currentPlayer = this.currentPlayer==0?1:0;
-		var pos = d.getPosByPoint(point.x, point.y, this.gridAttr);
+		var pos = d.getPosByPoint(point.x, point.y);
 		var chessman = new d.Chessman({
 			"left": pos.left,
 			"top": pos.top,
