@@ -23,10 +23,12 @@ d.Board.prototype = {
 		ctx.closePath();
 		ctx.fill();
 		//grid
-		var cellSize, gridWidth, gridHeight, gridX, gridY;
-		cellSize = Math.floor(d.G.stage.width/(d.G.gridNum+1));
-		gridWidth = gridHeight = cellSize*(d.G.gridNum-1);
-		gridX = gridY = (d.G.stage.width-gridWidth)/2;
+		var gridAttr, cellSize, gridWidth, gridHeight, gridX, gridY;
+		gridAttr = d.getGridAttr();
+		cellSize = gridAttr.cellSize;
+		gridWidth = gridHeight = gridAttr.gridSize;
+		gridX = gridAttr.left;
+		gridY = gridAttr.top;
 		ctx.lineWidth = 1;
 		ctx.strokeStyle = "#000000";
 		for(var i=0; i<d.G.gridNum; i++)

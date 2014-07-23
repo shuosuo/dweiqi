@@ -1,12 +1,12 @@
 (function(d) {
 d.Canvas = function(target) {
-    var canvas = this.canvas = document.createElement("canvas");
+    var canvas = this.elem = document.createElement("canvas");
     canvas.width = d.G.stage.width;
     canvas.height = d.G.stage.height;
     var container = typeof target==="string"?document.getElementById(target):target;
     container.appendChild(canvas);
     if(window.attachEvent&&navigator.userAgent.indexOf("Opera")===-1){
-        this.canvas = window.G_vmlCanvasManager.initElement(canvas);
+        this.elem = window.G_vmlCanvasManager.initElement(canvas);
     }
 };
 d.Canvas.prototype = {
@@ -18,13 +18,13 @@ d.Canvas.prototype = {
     	child.draw();
     },
     getContext: function(type) {
-    	var ctx = this.canvas.getContext(type||"2d");
+    	var ctx = this.elem.getContext(type||"2d");
     	return ctx;
     },
     setStyle: function(styles) {
     	for(var key in styles)
     	{
-    		this.canvas.style[key] = styles[key];
+    		this.elem.style[key] = styles[key];
     	}
     }
 };
