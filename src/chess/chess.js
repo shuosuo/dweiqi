@@ -39,8 +39,11 @@ d.Chess = function(id) {
         var point = chess.getPoint(event.offsetX, event.offsetY);
         if(!point) return;
         if(point.x<0||point.x>=d.G.grid.num||point.y<0||point.y>=d.G.grid.num) return;
+        //check is has chessman on point
         var chessman = chess.getChessman(point);
         if(chessman) return;
+        //when new point put a chessman, find new dead picess
+        chess.findDead(point);
         chess.move(point);
     }
 };
@@ -78,6 +81,12 @@ d.Chess.prototype = {
 			"stepnum": this.rawDataMap.length
 		});
 		this.battle.addChild(chessman);
+	},
+	remove: function() {
+
+	},
+	findDead: function(point) {
+
 	}
 };
 
