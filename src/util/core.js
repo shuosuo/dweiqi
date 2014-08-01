@@ -35,4 +35,19 @@ d.getPosByPoint = function(x, y) {
     }
 };
 
+d.getPointByPos = function(offsetX, offsetY) {
+    var gridAttr = d.G.grid;
+    if(offsetX<gridAttr.left-gridAttr.cellSize/2
+        ||offsetY<gridAttr.top-gridAttr.cellSize/2
+        ||offsetX>gridAttr.left+gridAttr.gridSize+gridAttr.cellSize/2
+        ||offsetY>gridAttr.top+gridAttr.gridSize+gridAttr.cellSize/2)
+    {
+        return null;
+    }
+
+    var pointX = Math.round((offsetX - gridAttr.left)/gridAttr.cellSize);
+    var pointY = Math.round((offsetY - gridAttr.top)/gridAttr.cellSize);
+    return {"x": pointX, "y": pointY};
+}
+
 })(window.d||{});

@@ -15,7 +15,7 @@ d.Chess = function(id) {
 	elem.style.height = d.G.stage.height+"px";
 	document.getElementById(id).appendChild(elem);
 	
-	//chess.board = createBoard();
+	chess.board = createBoard();
 	chess.battle = createBattlespace();
 	d.bind(chess.battle.elem, 'click', function(event, target) {
         clickHandler(event, target, chess)
@@ -36,7 +36,7 @@ d.Chess = function(id) {
 	}
 
 	function clickHandler(event, target, chess) {
-        var point = chess.getPoint(event.offsetX, event.offsetY);
+        var point = d.getPointByPos(event.offsetX, event.offsetY);
         if(!point) return;
         if(point.x<0||point.x>=d.G.grid.num||point.y<0||point.y>=d.G.grid.num) return;
         //check is has chessman on point
@@ -44,25 +44,21 @@ d.Chess = function(id) {
         if(chessman) return;
         //when new point put a chessman, find new dead picess
         var deadArr = chess.findDead(point);
-        chess.move(point);
+        if(deadArr.length==0) {
+        	chess.move(point);
+        	return;
+        }
+        if(chess.currentStep[deadArr[0].x+'~'+deadArr[0].y][0]==chess.currentPlayer) {
+        	return;
+        }
+        else {
+        	chess.remove(deadArr);
+        	chess.move(point);
+        }
     }
 };
 
 d.Chess.prototype = {
-	getPoint: function(offsetX, offsetY) {
-		var gridAttr = d.G.grid;
-		if(offsetX<gridAttr.left-gridAttr.cellSize/2
-			||offsetY<gridAttr.top-gridAttr.cellSize/2
-			||offsetX>gridAttr.left+gridAttr.gridSize+gridAttr.cellSize/2
-			||offsetY>gridAttr.top+gridAttr.gridSize+gridAttr.cellSize/2)
-		{
-			return null;
-		}
-
-		var pointX = Math.round((offsetX - gridAttr.left)/gridAttr.cellSize);
-		var pointY = Math.round((offsetY - gridAttr.top)/gridAttr.cellSize);
-		return {"x": pointX, "y": pointY};
-	},
 	getChessman: function(point) {
 		var key = point.x + '~' + point.y;
 		return this.currentStep[key];
@@ -80,10 +76,25 @@ d.Chess.prototype = {
 			"player": this.currentPlayer==0?1:0,
 			"stepnum": this.rawDataMap.length
 		});
-		//this.battle.addChild(chessman);
+		this.battle.addChild(chessman);
 	},
-	remove: function() {
+	remove: function(arr) {
+		var chess = this;
+		if(arr instanceof Array) {
+			for(var i=0; i<arr.length; i++) {
+				clear(arr[i]);
+			}
+		}
+		else {
+			clear(arr);
+		}
 
+		function clear(point) {
+			var chessman = chess.getChessman(point);
+			chessman = null;
+			delete chessman;
+			chess.battle.removeChild(point);
+		}
 	},
 	findDead: function(point) {
 		var infectedArrB = [];

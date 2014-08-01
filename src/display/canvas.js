@@ -18,6 +18,21 @@ d.Canvas.prototype = {
     	child.ctx = this.getContext();
     	child.draw();
     },
+    removeChild: function(point) {
+        var child = this.getChildByPoint(point);
+        this.childList = d.grepArray(this.childList, child);
+        child.remove();
+    },
+    getChildByPoint: function(point) {
+        for(var i=0; i<this.childList.length; i++) {
+            if(this.childList[i] instanceof d.Chessman&&
+                this.childList[i].point.x==point.x&&
+                this.childList[i].point.y==point.y)
+            {
+                return this.childList[i];
+            }
+        }
+    },
     getContext: function(type) {
     	var ctx = this.elem.getContext(type||"2d");
     	return ctx;
