@@ -2,11 +2,11 @@
 
 d.Chess = function(id) {
 	var chess = this;
-	//rawDataMap: The raw data of a chess game, to record every step chess, format as [stepData, stepData, ...]
+	//recordDataMap: The record data of a chess game, to record every step chess, format as [stepData, stepData, ...]
 	//stepData: to record every step, format as [{ key: value, key: value, ... }]
 	//key: format as /[0-18]~[0-18]/, e.g. '3~8', first number is x position, second number is y position 
 	//value: format as [player, stepNumber]
-	chess.rawDataMap = [];
+	chess.recordDataMap = [];
 	chess.currentStep = {};
 	chess.currentPlayer = 0;   //0: black, 1: white
 
@@ -15,7 +15,7 @@ d.Chess = function(id) {
 	elem.style.height = d.G.stage.height+"px";
 	document.getElementById(id).appendChild(elem);
 	
-	chess.board = createBoard();
+	//chess.board = createBoard();
 	chess.battle = createBattlespace();
 	d.bind(chess.battle.elem, 'click', function(event, target) {
         clickHandler(event, target, chess)
@@ -43,18 +43,21 @@ d.Chess = function(id) {
         var chessman = chess.getChessman(point);
         if(chessman) return;
         //when new point put a chessman, find new dead picess
-        var deadArr = chess.findDead(point);
-        if(deadArr.length==0) {
-        	chess.move(point);
-        	return;
-        }
-        if(chess.currentStep[deadArr[0].x+'~'+deadArr[0].y][0]==chess.currentPlayer) {
-        	return;
+        var oppositeDeadArr = chess.findDead(point, true);
+    	if(oppositeDeadArr.length>0) {
+    		chess.move(point);
+        	chess.remove(oppositeDeadArr);
         }
         else {
-        	chess.remove(deadArr);
-        	chess.move(point);
+        	var deadArr = chess.findDead(point);
+	        if(deadArr.length==0) {
+	        	chess.move(point);
+	        }
+	        else {
+	        	return;
+	        }
         }
+        chess.record();
     }
 };
 
@@ -66,20 +69,20 @@ d.Chess.prototype = {
 	move: function(point) {
 		var key = point.x + '~' + point.y;
 		this.currentStep = d.extend({}, this.currentStep);
-		this.rawDataMap.push(this.currentStep);
-		this.currentStep[key] = [this.currentPlayer, this.rawDataMap.length];
+		this.currentStep[key] = [this.currentPlayer, this.recordDataMap.length];
 		this.currentPlayer = this.currentPlayer==0?1:0;
 		var pos = d.getPosByPoint(point.x, point.y);
 		var chessman = new d.Chessman({
 			"left": pos.left,
 			"top": pos.top,
 			"player": this.currentPlayer==0?1:0,
-			"stepnum": this.rawDataMap.length
+			"stepnum": this.recordDataMap.length
 		});
 		this.battle.addChild(chessman);
 	},
 	remove: function(arr) {
 		var chess = this;
+		chess.currentStep = d.extend({}, chess.currentStep);
 		if(arr instanceof Array) {
 			for(var i=0; i<arr.length; i++) {
 				clear(arr[i]);
@@ -90,97 +93,87 @@ d.Chess.prototype = {
 		}
 
 		function clear(point) {
-			var chessman = chess.getChessman(point);
-			chessman = null;
-			delete chessman;
+			var key = point.x + '~' + point.y;
+			chess.currentStep[key] = null;
+			delete chess.currentStep[key];
 			chess.battle.removeChild(point);
 		}
 	},
-	findDead: function(point) {
-		var infectedArrB = [];
-		var infectedArrW = [];
+	record: function(step) {
+		this.recordDataMap.push(this.currentStep);
+	},
+	findDead: function(point, opposite) {
+		var infectedArr = [];
 		var waitArr = [];
-		waitArr.push(point);
+		var checkPlayer = opposite?(this.currentPlayer==0?1:0):this.currentPlayer;
+		var haveSpace = false;
 		var findStep = {};
-		findStep[point.x+'~'+point.y] = [this.currentPlayer, 0];
+		findStep[point.x+'~'+point.y] = [this.currentPlayer, -1];
 		var step = d.extend({}, findStep, this.currentStep);
-
-		var channelB = true;
-		var channelW = true;
-
+		if(!opposite)
+		{
+			waitArr.push(point);
+		}
+		else {
+			var aroundArr = around(point);
+			for(var i=0; i<aroundArr.length; i++) {
+				var key = aroundArr[i].x+'~'+aroundArr[i].y;
+				if(step[key]&&step[key][0]==checkPlayer) {
+					waitArr.push(aroundArr[i]);
+				}
+			}
+		}
+		
 		infect();
 		function infect() {
 			if(waitArr.length==0) {
 				return;
 			}
-			if(!channelB&&!channelW)
-			{
-				return;
-			}
 			var po = waitArr.shift();
 			var stepTemp = step[po.x+'~'+po.y];
-			if (stepTemp[2]) {
-				infect();
-				return;
-			}
-			stepTemp[2] = true;
-			//white exited and current point is white, or black exited and current point is black
-			if((!channelW&&stepTemp[0]==1)||(!channelB&&stepTemp[0]==0)) {
-				infect();
-				return;
-			}
-			var x = po.x;
-			var y = po.y;
-			var t  = y-1>=0  ?  {x:x, y:y-1}  :  null;
-			var r  = x+1>=0  ?  {x:x+1, y:y}  :  null;
-			var b  = y+1>=0  ?  {x:x, y:y+1}  :  null;
-			var l  = x-1>=0  ?  {x:x-1, y:y}  :  null;
-			var tempArr = [t, r, b, l];
-			var haveSpace = false;
+			var tempArr = around(po);
 			for(var i=0; i<tempArr.length; i++) {
-				if(tempArr[i]&&step[tempArr[i].x+'~'+tempArr[i].y]) {
-					if(!step[tempArr[i].x+'~'+tempArr[i].y][2])
+				var key = tempArr[i].x+'~'+tempArr[i].y;
+				if(step[key]) {
+					if(step[key][0]==checkPlayer&&!step[key][2])
 					{
+						step[key][2] = true;
 						waitArr.push(tempArr[i]);
 					}
 				}
-				else if(tempArr[i]) {
-					if(stepTemp[0]==0) {
-						channelB = false;
-					}
-					else {
-						channelW = false;
-					}
+				else {
 					haveSpace = true;
-					//break;
+					break;
 				}
 			}
 			if(!haveSpace) {
-				if(stepTemp[0]==0) {
-					infectedArrB.push(po);
-				}
-				else {
-					infectedArrW.push(po);
-				}
+				infectedArr.push(po);
 				infect();
-				return;
-			}
-			else if(channelB||channelW) {
-				infect();
-				return;
 			}
 		}
-		if(!channelB&&!channelW) {
+		function around(po) {
+			var arr = [];
+			var x = po.x;
+			var y = po.y;
+			if(y-1>=0) {
+				arr.push({x:x, y:y-1});
+			}
+			if(x+1>=0) {
+				arr.push({x:x+1, y:y});
+			}
+			if(y+1>=0) {
+				arr.push({x:x, y:y+1});
+			}
+			if(x-1>=0) {
+				arr.push({x:x-1, y:y});
+			}
+			return arr;
+		}
+		if(haveSpace) {
 			return [];
 		}
-		else if(channelB&&channelW) {
-			return this.currentPlayer==0?infectedArrW:infectedArrB;
-		}
-		else if(channelB) {
-			return infectedArrB;
-		}
 		else {
-			return infectedArrW;
+			return infectedArr;
 		}
 	}
 };
