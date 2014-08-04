@@ -103,28 +103,43 @@ d.Chess.prototype = {
 		this.recordDataMap.push(this.currentStep);
 	},
 	findDead: function(point, opposite) {
+		var resultArr = [];
 		var infectedArr = [];
 		var waitArr = [];
 		var checkPlayer = opposite?(this.currentPlayer==0?1:0):this.currentPlayer;
 		var haveSpace = false;
+		var step;
 		var findStep = {};
 		findStep[point.x+'~'+point.y] = [this.currentPlayer, -1];
-		var step = d.extend({}, findStep, this.currentStep);
 		if(!opposite)
 		{
+			step = d.extend({}, findStep, this.currentStep);
+			step[point.x+'~'+point.y]&&(step[point.x+'~'+point.y][2]=true);
 			waitArr.push(point);
+			infect();
+			if(!haveSpace) {
+				resultArr = infectedArr;
+			}
 		}
 		else {
 			var aroundArr = around(point);
 			for(var i=0; i<aroundArr.length; i++) {
+				step = d.extend({}, findStep, this.currentStep);
 				var key = aroundArr[i].x+'~'+aroundArr[i].y;
 				if(step[key]&&step[key][0]==checkPlayer) {
+					infectedArr = [];
+					haveSpace = false;
+					waitArr = [];
+					step[aroundArr[i].x+'~'+aroundArr[i].y]&&(step[aroundArr[i].x+'~'+aroundArr[i].y][2]=true);
 					waitArr.push(aroundArr[i]);
+					infect();
+					if(!haveSpace) {
+						resultArr = resultArr.concat(infectedArr);
+					}
 				}
 			}
 		}
 		
-		infect();
 		function infect() {
 			if(waitArr.length==0) {
 				return;
@@ -158,10 +173,10 @@ d.Chess.prototype = {
 			if(y-1>=0) {
 				arr.push({x:x, y:y-1});
 			}
-			if(x+1>=0) {
+			if(x+1<d.G.grid.num) {
 				arr.push({x:x+1, y:y});
 			}
-			if(y+1>=0) {
+			if(y+1<d.G.grid.num) {
 				arr.push({x:x, y:y+1});
 			}
 			if(x-1>=0) {
@@ -169,12 +184,8 @@ d.Chess.prototype = {
 			}
 			return arr;
 		}
-		if(haveSpace) {
-			return [];
-		}
-		else {
-			return infectedArr;
-		}
+		
+		return resultArr;
 	}
 };
 
