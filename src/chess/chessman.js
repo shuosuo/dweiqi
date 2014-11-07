@@ -2,7 +2,7 @@
 
 d.Chessman = function(options) {
     this.options = options;
-    this.fillColor = options.player==0?'#cccccc':'#eeeeee';
+    this.fillColor = options.player==0?'#000000':'#ffffff';
     this.point = d.getPointByPos(this.options.left, this.options.top);
 };
 

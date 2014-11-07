@@ -9,8 +9,8 @@ d.Board.prototype = {
 	draw: function() {
 		var options = {
 			strokeWidth: 3,
-			strokeColor: "red",
-			fillColor: "yellow"
+			strokeColor: "#000000",
+			fillColor: "#cc6633"
 		};
 		var ctx = this.ctx;
 		//background

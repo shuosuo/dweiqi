@@ -15,7 +15,7 @@ d.Chess = function(id) {
 	elem.style.height = d.G.stage.height+"px";
 	document.getElementById(id).appendChild(elem);
 	
-	//chess.board = createBoard();
+	chess.board = createBoard();
 	chess.battle = createBattlespace();
 	d.bind(chess.battle.elem, 'click', function(event, target) {
         clickHandler(event, target, chess)
